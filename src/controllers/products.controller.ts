@@ -1,14 +1,12 @@
 import { NextFunction, Response, Request } from 'express';
-// import { Answer, AnswerInput, AnswerUpdateInput } from '../entities';
-// import { AnswerService } from '../services';
+import { ProductsService } from '../services/products.service';
 
 export class ProductsController {
-  // public answerService = new AnswerService();
+  private productsService = new ProductsService();
 
   public getList = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const answers: Answer[] = await this.answerService.findAllAnswers();
-      const productList = [{asd: 123}];
+      const productList = await this.productsService.getProducts();
       res.status(200).json(productList);
     } catch (error) {
       next(error);
@@ -17,9 +15,12 @@ export class ProductsController {
 
   public getProductById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const answers: Answer[] = await this.answerService.findAllAnswers();
-      const productList = [{asd: 456}];
-      res.status(200).json(productList);
+      const product = await this.productsService.getProductById(Number(req.params.id));
+      if (product) {
+        res.status(200).json(product);
+      } else {
+        res.status(404).json({ error: 'Product not found.' })
+      }
     } catch (error) {
       next(error);
     }
@@ -27,9 +28,12 @@ export class ProductsController {
 
   public addProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const answers: Answer[] = await this.answerService.findAllAnswers();
-      const productList = [{asd: 7}];
-      res.status(200).json(productList);
+      const productAdded = await this.productsService.addProduct(req.body);
+      if (productAdded) {
+        res.status(200).json(productAdded);
+      } else {
+        res.status(404).json({ error: 'The product could not be added.' })
+      }
     } catch (error) {
       next(error);
     }
@@ -37,9 +41,12 @@ export class ProductsController {
 
   public updateProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const answers: Answer[] = await this.answerService.findAllAnswers();
-      const productList = [{asd: 8}];
-      res.status(200).json(productList);
+      const productUpdated = await this.productsService.updateProduct(Number(req.params.id), req.body);
+      if (productUpdated) {
+        res.status(200).json(productUpdated);
+      } else {
+        res.status(404).json({ error: 'Product not found.' })
+      }
     } catch (error) {
       next(error);
     }
@@ -47,9 +54,12 @@ export class ProductsController {
 
   public deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      // const answers: Answer[] = await this.answerService.findAllAnswers();
-      const productList = [{asd: 9}];
-      res.status(200).json(productList);
+      const productDeleted = await this.productsService.deleteProduct(Number(req.params.id));
+      if (productDeleted) {
+        res.status(200).json(productDeleted);
+      } else {
+        res.status(404).json({ error: 'Product not found.' })
+      }
     } catch (error) {
       next(error);
     }
