@@ -1,9 +1,5 @@
 import { Router } from 'express';
-// import { AnswerController } from '../controllers';
-// import { UserRole } from '../entities';
 import { Route } from '../interfaces/routes.interface';
-// import { authMiddleware } from '../middlewares/auth.middleware';
-// import { authorizationMiddleware } from '../middlewares/authorization.middleware';
 import { ProductsController } from '../controllers/products.controller';
 import { authorizationMiddleware } from '../middlewares/authorizationMiddleware';
 
