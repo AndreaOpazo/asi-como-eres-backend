@@ -2,7 +2,7 @@ import { NextFunction, Response, Request } from 'express';
 import HttpException from '../exceptions/HttpException';
 import { MiddlewareParams } from '../types';
 
-const isAdmin = false;
+const isAdmin = true;
 
 export const authorizationMiddleware = ({ path, method }: MiddlewareParams) => (req: Request, _res: Response, next: NextFunction) => {
   if (!isAdmin) {

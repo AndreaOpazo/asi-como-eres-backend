@@ -1,4 +1,5 @@
 import { NextFunction, Response, Request } from 'express';
+import { CART_NOT_FOUND, PRODUCT_IS_NOT_ADDED } from '../../constants';
 import { CartService } from '../services/cart.service';
 
 export class CartController {
@@ -17,9 +18,10 @@ export class CartController {
     try {
       const cart = await this.cartService.getCartById(Number(req.params.id));
       if (cart) {
-        res.status(200).json(cart.products);
+        const products = cart.products;
+        res.status(200).json(this.IsJsonString(products) ? JSON.parse(products) : products);
       } else {
-        res.status(404).json({ error: 'Cart not found.' })
+        res.status(404).json({ error: CART_NOT_FOUND })
       }
     } catch (error) {
       next(error);
@@ -33,7 +35,7 @@ export class CartController {
       if (productSaved) {
         res.status(200).json(productSaved);
       } else {
-        res.status(404).json({ error: 'Product or Cart not found.' })
+        res.status(404).json({ error: PRODUCT_IS_NOT_ADDED })
       }
     } catch (error) {
       next(error);
@@ -46,10 +48,19 @@ export class CartController {
       if (cartProductsDeleted) {
         res.status(200).json(cartProductsDeleted);
       } else {
-        res.status(404).json({ error: 'Product or Cart not found.' })
+        res.status(404).json({ error: CART_NOT_FOUND })
       }
     } catch (error) {
       next(error);
     }
+  }
+
+  private IsJsonString(value: any) {
+    try {
+      JSON.parse(value);
+    } catch (e) {
+      return false;
+    }
+    return true;
   }
 }

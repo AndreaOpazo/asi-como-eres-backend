@@ -21,6 +21,8 @@
   "dependencies": {
     "@types/socket.io": "^3.0.2",
     "express": "^4.17.1",
+    "knex": "^0.95.11",
+    "mysql": "^2.18.1",
     "nodemon": "^2.0.12",
     "socket.io": "^4.2.0",
     "socket.io-client": "^4.2.0",

@@ -1,4 +1,5 @@
 import { NextFunction, Response, Request } from 'express';
+import { PRODUCT_IS_NOT_ADDED, PRODUCT_NOT_FOUND } from '../../constants';
 import { ProductsService } from '../services/products.service';
 
 export class ProductsController {
@@ -19,7 +20,7 @@ export class ProductsController {
       if (product) {
         res.status(200).json(product);
       } else {
-        res.status(404).json({ error: 'Product not found.' })
+        res.status(404).json({ error: PRODUCT_NOT_FOUND })
       }
     } catch (error) {
       next(error);
@@ -32,7 +33,7 @@ export class ProductsController {
       if (productAdded) {
         res.status(200).json(productAdded);
       } else {
-        res.status(404).json({ error: 'The product could not be added.' })
+        res.status(404).json({ error: PRODUCT_IS_NOT_ADDED })
       }
     } catch (error) {
       next(error);
@@ -45,7 +46,7 @@ export class ProductsController {
       if (productUpdated) {
         res.status(200).json(productUpdated);
       } else {
-        res.status(404).json({ error: 'Product not found.' })
+        res.status(404).json({ error: PRODUCT_NOT_FOUND })
       }
     } catch (error) {
       next(error);
@@ -58,7 +59,7 @@ export class ProductsController {
       if (productDeleted) {
         res.status(200).json(productDeleted);
       } else {
-        res.status(404).json({ error: 'Product not found.' })
+        res.status(404).json({ error: PRODUCT_NOT_FOUND })
       }
     } catch (error) {
       next(error);

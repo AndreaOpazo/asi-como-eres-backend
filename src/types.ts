@@ -19,3 +19,5 @@ export type Cart = {
   products: Product[];
   timestamp: number;
 };
+
+export type Resource = Cart | Product;

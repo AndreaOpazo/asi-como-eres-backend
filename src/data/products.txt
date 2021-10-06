@@ -1,1 +1,1 @@
-[{"name":"Hola","description":"no se","code":123,"image":"qhago.png","price":778,"stock":10,"id":1,"timestamp":1631684184579},{"name":"Hola todo bien","description":"no se","code":1234,"image":"qhago.png","price":778,"stock":1000,"id":2,"timestamp":1631684825416}]
+[{"name":"negros de mierda","description":"todo el dia con el tetra pa bancar la vida","code":852.88,"image":"chivi.png","price":1000,"stock":50,"id":1,"timestamp":1633463288508}]
