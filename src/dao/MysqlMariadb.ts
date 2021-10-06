@@ -47,6 +47,14 @@ export default class MysqlMariadb implements DaoInterface {
     };
   }
 
+  async createCart(cartId: number): Promise<void> {
+    try {
+      await knex(this.resource).insert({id: cartId, products: "[]"});
+    } catch (error) {
+      console.error(error);
+    };
+  }
+
   async create(resourceData: Resource): Promise<Resource | null> {
     try {
       await knex(this.resource).insert(resourceData);
@@ -73,6 +81,12 @@ export default class MysqlMariadb implements DaoInterface {
       const tableCart = this.resource;
       const tableProducts = ResourceNames.PRODUCTS;
       const productToAdd = await knex.from(tableProducts).where("id", productId).first();
+      const cartExists = await this.read();
+      if (cartExists.length === 0) {
+        if (cartId === 1) {
+          await this.createCart(cartId);
+        }
+      }
       const cart = await knex.from(tableCart).where("id", cartId).first();
       const jsonProducts = JSON.parse(cart.products);
       jsonProducts.push(productToAdd);
