@@ -1,0 +1,6 @@
+{
+  "strictPropertyInitialization": false,
+  "compilerOptions": {
+    "esModuleInterop": true
+  }
+}

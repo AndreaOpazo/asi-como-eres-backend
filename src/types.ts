@@ -4,8 +4,8 @@ export type MiddlewareParams = {
 };
 
 export type Product = {
-  id: number;
-  timestamp: number;
+  id: number | string;
+  timestamp: number | string;
   name: string;
   description: string;
   code: number;
@@ -15,9 +15,9 @@ export type Product = {
 };
 
 export type Cart = {
-  id: number;
-  products: Product[];
-  timestamp: number;
+  id: number | string;
+  products: Product[] | string;
+  timestamp: number | string;
 };
 
 export type Resource = Cart | Product;

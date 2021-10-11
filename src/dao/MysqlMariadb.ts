@@ -1,45 +1,22 @@
 import DaoInterface from "../interfaces/dao.interface";
 import { Product, Resource } from "../types";
-import { Knex } from "knex";
-import { optionsMaria, ResourceNames } from "../../constants";
+import { optionsMaria, PRODUCT_NOT_FOUND, ResourceNames } from "../../constants";
+import RelationalDB from "./RelationalDB";
 
 const knex = require('knex')(optionsMaria);
 
-export default class MysqlMariadb implements DaoInterface {
+export default class MysqlMariadb extends RelationalDB implements DaoInterface {
   private resource: string;
 
   constructor(resource: string) {
+    super();
     this.resource = resource;
   }
   
-  async createTable() {
-    const tableName = this.resource;
-    const tableExists = await knex.schema.hasTable(tableName);
-    if (tableName === ResourceNames.PRODUCTS && !tableExists) {
-      await knex.schema.createTable(tableName, (table: Knex.TableBuilder) => {
-        table.string("name", 20).notNullable();
-        table.string("description").notNullable();
-        table.integer("code");
-        table.string("image").notNullable();
-        table.float("price");
-        table.integer("stock");
-        table.timestamp("date").defaultTo(knex.fn.now());
-        table.increments("id", { primaryKey: true }).notNullable();
-      });
-    }
-    if (tableName === ResourceNames.CART && !tableExists) {
-      await knex.schema.createTable(tableName, (table: Knex.TableBuilder) => {
-        table.increments("id", { primaryKey: true }).notNullable();
-        table.specificType("products", 'json');
-        table.timestamp("date").defaultTo(knex.fn.now());
-      });
-    }
-  }
-
-  async read(id?: number) {
+  async read(id?: number | string) {
+    await super.checkTables(knex);
     const tableName = this.resource;
     try {
-      await this.createTable();
       if (id) return await knex.from(tableName).where("id", id).first();
       return await knex.from(tableName).select("*");
     } catch (error) {
@@ -47,15 +24,8 @@ export default class MysqlMariadb implements DaoInterface {
     };
   }
 
-  async createCart(cartId: number): Promise<void> {
-    try {
-      await knex(this.resource).insert({id: cartId, products: "[]"});
-    } catch (error) {
-      console.error(error);
-    };
-  }
-
   async create(resourceData: Resource): Promise<Resource | null> {
+    await super.checkTables(knex);
     try {
       await knex(this.resource).insert(resourceData);
       return resourceData;
@@ -66,6 +36,7 @@ export default class MysqlMariadb implements DaoInterface {
   }
 
   async update(id: number, product: Product): Promise<Resource | null> {
+    await super.checkTables(knex);
     const tableName = this.resource;
     try {
       await knex(tableName).where("id", id).update(product);
@@ -77,17 +48,14 @@ export default class MysqlMariadb implements DaoInterface {
   }
 
   async addProductToCart(cartId: number, productId: number): Promise<Product | null> {
+    await super.checkTables(knex);
     try {
       const tableCart = this.resource;
       const tableProducts = ResourceNames.PRODUCTS;
       const productToAdd = await knex.from(tableProducts).where("id", productId).first();
-      const cartExists = await this.read();
-      if (cartExists.length === 0) {
-        if (cartId === 1) {
-          await this.createCart(cartId);
-        }
-      }
-      const cart = await knex.from(tableCart).where("id", cartId).first();
+      if (!productToAdd) throw new Error(PRODUCT_NOT_FOUND); 
+      let cart = await this.read(cartId);
+      if (!cart) cart = await this.create({ products: '[]'} as Resource);
       const jsonProducts = JSON.parse(cart.products);
       jsonProducts.push(productToAdd);
       await knex(tableCart).where("id", cartId).update({products: JSON.stringify(jsonProducts)});
@@ -99,6 +67,7 @@ export default class MysqlMariadb implements DaoInterface {
   }
 
   async delete(id: number): Promise<Resource | null> {
+    await super.checkTables(knex);
     const tableName = this.resource;
     try {
       if (tableName === ResourceNames.PRODUCTS) {

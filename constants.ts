@@ -9,7 +9,7 @@ export const MONGODB: number = 3;
 export const MONGODBAAS: number = 4;
 export const FIREBASE: number = 5;
 
-export const USED_PERSISTENCY_TYPE: number = MYSQL_MARIADB;
+export const USED_PERSISTENCY_TYPE: number = SQLITE3;
 
 export enum ResourceNames {
   PRODUCTS = 'products',
@@ -25,3 +25,14 @@ export const optionsMaria = {
     database: "ecommerce",
   },
 };
+
+export const optionsSqlite3 = {
+  client: "sqlite3",
+  connection: {
+    filename: 'src/data/DB/ecommerce',
+  },
+  useNullAsDefault: true,
+};
+
+export const localMongoDbUrl: string = 'mongodb://localhost:27017/ecommerce';
+export const cloudMongoDbUrl: string = 'mongodb+srv://andy:GoosfrabA08@asi-como-eres-ecommerce.wsgl2.mongodb.net/ecommerce?retryWrites=true&w=majority';

@@ -10,7 +10,7 @@ export default class Fs implements DaoInterface {
     this.resource = resource;
   }
 
-  async read(id?: number): Promise<any> {
+  async read(id?: number | string): Promise<any> {
     try {
       const listFileContent = await fs.readFile(`src/data/${this.resource}.txt`, 'utf-8');
       const list = JSON.parse(listFileContent);

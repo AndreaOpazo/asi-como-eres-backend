@@ -16,7 +16,7 @@ export class CartController {
 
   public getProductsByCartId = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const cart = await this.cartService.getCartById(Number(req.params.id));
+      const cart = await this.cartService.getCartById(req.params.id);
       if (cart) {
         const products = cart.products;
         res.status(200).json(this.IsJsonString(products) ? JSON.parse(products) : products);
@@ -31,7 +31,7 @@ export class CartController {
   public addProductToCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { cartId, productId } = req.params
-      const productSaved = await this.cartService.addProductToCart(Number(cartId), Number(productId));
+      const productSaved = await this.cartService.addProductToCart(cartId, productId);
       if (productSaved) {
         res.status(200).json(productSaved);
       } else {
@@ -44,7 +44,7 @@ export class CartController {
 
   public deleteCartProducts = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const cartProductsDeleted = await this.cartService.deleteCartProducts(Number(req.params.id));
+      const cartProductsDeleted = await this.cartService.deleteCartProducts(req.params.id);
       if (cartProductsDeleted) {
         res.status(200).json(cartProductsDeleted);
       } else {

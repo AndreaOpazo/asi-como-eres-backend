@@ -1,9 +1,9 @@
 import { Product, Resource } from "../types";
 
 export default interface DaoInterface {
-  read(id?: number): any;
+  read(id?: number | string): any;
   create(resourceData: Resource): Promise<Resource | null>;
-  update(id: number, resourceData: Resource): Promise<Resource | null>;
-  delete(id: number): Promise<Resource | null>;
-  addProductToCart(cartId: number, productId: number): Promise<Product | null>;
+  update(id: number | string, resourceData: Resource): Promise<Resource | null>;
+  delete(id: number | string): Promise<Resource | null>;
+  addProductToCart(cartId: number | string, productId: number | string): Promise<Product | null>;
 }

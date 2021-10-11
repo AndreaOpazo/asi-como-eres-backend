@@ -1,26 +1,86 @@
 import DaoInterface from "../interfaces/dao.interface";
 import { Product, Resource } from "../types";
+import { optionsSqlite3, PRODUCT_NOT_FOUND, ResourceNames } from "../../constants";
+import RelationalDB from './RelationalDB';
 
-export default class Sqlite3 implements DaoInterface {
+const knex = require('knex')(optionsSqlite3);
+
+export default class Sqlite3 extends RelationalDB implements DaoInterface {
   private resource: string;
 
   constructor(resource: string) {
+    super();
     this.resource = resource;
   }
-  addProductToCart(cartId: number, productId: number): Promise<Product> {
-    throw new Error("Method not implemented.");
+
+  async read(id?: number | string) {
+    await super.checkTables(knex);
+    const tableName = this.resource;
+    try {
+      if (id) return await knex.from(tableName).where("id", id).first();
+      return await knex.from(tableName).select("*");
+    } catch (error) {
+      console.error(error);
+    };
   }
-  
-  read(id?: number) {
-    throw new Error("Method not implemented.");
+
+  async create(resourceData: Resource): Promise<Resource | null> {
+    await super.checkTables(knex);
+    try {
+      return await knex(this.resource).insert(resourceData);
+    } catch (error) {
+      console.error(error);
+      return null;
+    };
   }
-  create(resourceData: Resource): Promise<Resource | null> {
-    throw new Error("Method not implemented.");
+
+  async update(id: number, product: Product): Promise<Resource | null> {
+    await super.checkTables(knex);
+    const tableName = this.resource;
+    try {
+      await knex(tableName).where("id", id).update(product);
+      return await knex.from(tableName).where("id", id).first();
+    } catch (error) {
+      console.error(error);
+      return null;
+    };
   }
-  update(id: number, product: Product): Promise<Resource | null> {
-    throw new Error("Method not implemented.");
+
+  async addProductToCart(cartId: number, productId: number): Promise<Product | null> {
+    await super.checkTables(knex);
+    try {
+      const tableCart = this.resource;
+      const tableProducts = ResourceNames.PRODUCTS;
+      const productToAdd = await knex.from(tableProducts).where("id", productId).first();
+      if (!productToAdd) throw new Error(PRODUCT_NOT_FOUND); 
+      let cart = await this.read(cartId);
+      if (!cart) cart = await this.create({ products: '[]'} as Resource);
+      const jsonProducts = JSON.parse(cart.products);
+      jsonProducts.push(productToAdd);
+      await knex(tableCart).where("id", cartId).update({products: JSON.stringify(jsonProducts)});
+      return productToAdd;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
   }
-  delete(id: number): Promise<Resource | null> {
-    throw new Error("Method not implemented.");
-  }
+
+  async delete(id: number): Promise<Resource | null> {
+    await super.checkTables(knex);
+    const tableName = this.resource;
+    try {
+      if (tableName === ResourceNames.PRODUCTS) {
+        const productToDelete = await knex.from(tableName).where("id", id).first();
+        await knex.from(tableName).where("id", id).del();
+        if (productToDelete.length === 0) throw new Error();
+        return productToDelete;
+      }
+      const cart = await knex.from(tableName).where("id", id).first();
+      await knex(tableName).where("id", id).update({products: JSON.stringify([])});
+      return cart;
+    } catch (error) {
+      console.log(error);
+      return null;
+    };
+  };
 }

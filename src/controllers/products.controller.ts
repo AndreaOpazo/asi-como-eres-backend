@@ -16,7 +16,7 @@ export class ProductsController {
 
   public getProductById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await this.productsService.getProductById(Number(req.params.id));
+      const product = await this.productsService.getProductById(req.params.id);
       if (product) {
         res.status(200).json(product);
       } else {
@@ -42,7 +42,7 @@ export class ProductsController {
 
   public updateProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const productUpdated = await this.productsService.updateProduct(Number(req.params.id), req.body);
+      const productUpdated = await this.productsService.updateProduct(req.params.id, req.body);
       if (productUpdated) {
         res.status(200).json(productUpdated);
       } else {
@@ -55,7 +55,7 @@ export class ProductsController {
 
   public deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const productDeleted = await this.productsService.deleteProduct(Number(req.params.id));
+      const productDeleted = await this.productsService.deleteProduct(req.params.id);
       if (productDeleted) {
         res.status(200).json(productDeleted);
       } else {

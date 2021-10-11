@@ -10,7 +10,7 @@ export class ProductsService {
     return await this.persistanceType.read();
   };
 
-  public getProductById = async (id: number) => {
+  public getProductById = async (id: number | string) => {
     return await this.persistanceType.read(id);
   };
 
@@ -18,11 +18,11 @@ export class ProductsService {
     return await this.persistanceType.create(product);
   };
 
-  public updateProduct = async (id: number, product: Product) => {
+  public updateProduct = async (id: number | string, product: Product) => {
     return await this.persistanceType.update(id, product);
   };
 
-  public deleteProduct = async (id: number) => {
+  public deleteProduct = async (id: number | string) => {
     return await this.persistanceType.delete(id);
   };
 }

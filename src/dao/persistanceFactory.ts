@@ -1,6 +1,8 @@
 import { 
+  cloudMongoDbUrl,
   FIREBASE,
   FS,
+  localMongoDbUrl,
   MONGODB,
   MONGODBAAS,
   MYSQL_MARIADB,
@@ -11,7 +13,6 @@ import Fs from "./Fs";
 import MysqlMariadb from "./MysqlMariadb";
 import Sqlite3 from "./Sqlite3";
 import Mongodb from "./Mongodb";
-import MongoDbaas from "./MongoDbaaS";
 import Firebase from "./Firebase";
 
 export default (resource: string) => {
@@ -23,9 +24,9 @@ export default (resource: string) => {
     case SQLITE3:
       return new Sqlite3(resource);
     case MONGODB:
-      return new Mongodb(resource);
+      return new Mongodb(resource, localMongoDbUrl);
     case MONGODBAAS:
-      return new MongoDbaas(resource);
+      return new Mongodb(resource, cloudMongoDbUrl);
     case FIREBASE:
       return new Firebase(resource);
   }

@@ -9,15 +9,15 @@ export class CartService  {
     return await this.persistanceType.read();
   };
 
-  public getCartById = async (id: number) => {
+  public getCartById = async (id: number | string) => {
     return await this.persistanceType.read(id);
   };
 
-  public addProductToCart = async (cartId: number, productId: number) => {
+  public addProductToCart = async (cartId: number | string, productId: number | string) => {
     return await this.persistanceType.addProductToCart(cartId, productId);
   };
 
-  public deleteCartProducts = async (id: number) => {
+  public deleteCartProducts = async (id: number | string) => {
     return await this.persistanceType.delete(id);
   };
 }
