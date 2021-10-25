@@ -4,6 +4,7 @@ import mongoose, { Model } from 'mongoose';
 import { productModel } from '../models/products';
 import { cartModel } from '../models/cart';
 import { CART_NOT_FOUND, PRODUCT_NOT_FOUND, ResourceNames } from '../../constants';
+import { getActualDate } from '../utils';
 
 export default class Mongodb implements DaoInterface {
   private model: Model<any>;
@@ -15,7 +16,7 @@ export default class Mongodb implements DaoInterface {
 
   async read(id?: number | string) {
     if (id) return await this.model.findById(id);
-    return await this.model.find().lean();
+    return await this.model.find();
   }
 
   async addProductToCart(cartId: number | string, productId: number | string): Promise<Product> {
@@ -24,16 +25,22 @@ export default class Mongodb implements DaoInterface {
 
     //si el card id no existe, crea un cart --> esto se realiza asi, ya que no hay ningun endpoint para crear un cart
     let cart = await cartModel.findById(cartId);
-    if (!cart) cart = await this.create({ products: [] } as Resource);
+    if (!cart) cart = await this.model.create({ products: [] as Product[], date: getActualDate() });
 
     cart.products.push(productToAdd);
 
     await cartModel.findByIdAndUpdate(cart._id, { ...cart, products: cart.products });
-    return cart;
+    return cart; //muestra el objeto cart actualizado, corroborar en list para ver si se creo bien.
   }
 
   async create(resourceData: Resource): Promise<Resource | null> {
-    return await this.model.create(resourceData);
+    try {
+      const productToAdd = {...resourceData, date: getActualDate()};
+      await this.model.create(productToAdd);
+      return productToAdd;
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async update(id: number | string, resourceData: Resource): Promise<Resource | null> {

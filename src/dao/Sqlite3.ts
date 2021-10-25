@@ -27,14 +27,15 @@ export default class Sqlite3 extends RelationalDB implements DaoInterface {
   async create(resourceData: Resource): Promise<Resource | null> {
     await super.checkTables(knex);
     try {
-      return await knex(this.resource).insert(resourceData);
+      await knex(this.resource).insert(resourceData);
+      return resourceData;
     } catch (error) {
       console.error(error);
       return null;
     };
   }
 
-  async update(id: number, product: Product): Promise<Resource | null> {
+  async update(id: number | string, product: Product): Promise<Resource | null> {
     await super.checkTables(knex);
     const tableName = this.resource;
     try {
@@ -65,7 +66,7 @@ export default class Sqlite3 extends RelationalDB implements DaoInterface {
     }
   }
 
-  async delete(id: number): Promise<Resource | null> {
+  async delete(id: number | string): Promise<Resource | null> {
     await super.checkTables(knex);
     const tableName = this.resource;
     try {
@@ -77,7 +78,7 @@ export default class Sqlite3 extends RelationalDB implements DaoInterface {
       }
       const cart = await knex.from(tableName).where("id", id).first();
       await knex(tableName).where("id", id).update({products: JSON.stringify([])});
-      return cart;
+      return cart; //muestra el objeto cart que se borro, comprobar en list si sus productos dueron borrados.
     } catch (error) {
       console.log(error);
       return null;

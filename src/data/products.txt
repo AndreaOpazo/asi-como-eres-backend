@@ -1,1 +1,1 @@
-[{"name":"negros de mierda","description":"todo el dia con el tetra pa bancar la vida","code":852.88,"image":"chivi.png","price":1000,"stock":50,"id":1,"timestamp":1633463288508}]
+[{"name":"prueba","description":"prueba de update","code":564,"image":"holaychau.png","price":400,"stock":20,"id":"1","timestamp":1635191897635}]

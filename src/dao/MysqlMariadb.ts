@@ -35,7 +35,7 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
     };
   }
 
-  async update(id: number, product: Product): Promise<Resource | null> {
+  async update(id: number | string, product: Product): Promise<Resource | null> {
     await super.checkTables(knex);
     const tableName = this.resource;
     try {
@@ -47,7 +47,7 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
     };
   }
 
-  async addProductToCart(cartId: number, productId: number): Promise<Product | null> {
+  async addProductToCart(cartId: number | string, productId: number): Promise<Product | null> {
     await super.checkTables(knex);
     try {
       const tableCart = this.resource;
@@ -66,7 +66,7 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
     }
   }
 
-  async delete(id: number): Promise<Resource | null> {
+  async delete(id: number | string): Promise<Resource | null> {
     await super.checkTables(knex);
     const tableName = this.resource;
     try {

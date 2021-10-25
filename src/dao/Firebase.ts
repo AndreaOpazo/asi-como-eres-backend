@@ -3,7 +3,6 @@ import { Product, Resource } from '../types';
 import firestore from '../firebaseConnection';
 import { ResourceNames, PRODUCT_NOT_FOUND, CART_NOT_FOUND } from '../../constants';
 import { getActualDate } from '../utils';
-import { threadId } from 'worker_threads';
 
 export default class Firebase implements DaoInterface {
   private resource: string;
@@ -19,13 +18,17 @@ export default class Firebase implements DaoInterface {
   }
 
   async read(id?: number | string) {
-    if (id) {
-      const productSnapshot = await firestore.collection(this.resource).doc(id as string).get();
-      if (!productSnapshot.data()) throw new Error(PRODUCT_NOT_FOUND);
-      return this.mapProduct(productSnapshot);
+    try {
+      if (id) {
+        const productSnapshot = await firestore.collection(this.resource).doc(id as string).get();
+        if (!productSnapshot.data()) throw new Error;
+        return this.mapProduct(productSnapshot);
+      }
+      const snapshot = await firestore.collection(this.resource).get();
+      return snapshot.docs.map(this.mapProduct);
+    } catch (error) {
+      console.error(error);
     }
-    const snapshot = await firestore.collection(this.resource).get();
-    return snapshot.docs.map(this.mapProduct);
   }
 
   async addProductToCart(cartId: number | string, productId: number | string): Promise<Product> {
@@ -37,6 +40,7 @@ export default class Firebase implements DaoInterface {
     const cartSnapshot = await firestore.collection(ResourceNames.CART).doc(cartId as string).get();
     let cartData = cartSnapshot.data();
     
+    //si le paso un idCart que no existe, me crea un cart
     if (!cartData) cartData = await this.create({ products: [], timestamp: getActualDate() } as Resource);
 
     cartData.products.push(productData);
@@ -47,7 +51,7 @@ export default class Firebase implements DaoInterface {
   }
 
   async create(resourceData: Resource): Promise<Resource | null> {
-    const createdDocument = await firestore.collection(this.resource).add(resourceData);
+    const createdDocument = await firestore.collection(this.resource).add({...resourceData, timestamp: getActualDate()});
     const createdDocumentData = await createdDocument.get();
     return this.mapProduct(createdDocumentData);
   }

@@ -13,13 +13,12 @@ export default class Fs implements DaoInterface {
   async read(id?: number | string): Promise<any> {
     try {
       const listFileContent = await fs.readFile(`src/data/${this.resource}.txt`, 'utf-8');
+      if (!listFileContent && !id) return [];
       const list = JSON.parse(listFileContent);
-      if (id) {
-        return list.find((resource: { id: number; }) => resource.id === id)
-      };
+      if (id) return list.find((resource: { id: number; }) => Number(resource.id) === Number(id));
       return list;
     } catch (error) {
-      return [];
+      console.error(error);
     }
   }
 
@@ -42,10 +41,10 @@ export default class Fs implements DaoInterface {
     }
   }
 
-  async update(id: number, resourceData: Resource): Promise<Resource | null> {
+  async update(id: number | string, resourceData: Resource): Promise<Resource | null> {
     try {
       const productList = await this.read();
-      const productIndexToUpdate = productList.findIndex((productToFind: Product) => productToFind.id === id);
+      const productIndexToUpdate = productList.findIndex((productToFind: Product) => Number(productToFind.id) === Number(id));
       const timestamp = productList[productIndexToUpdate].timestamp;
       if (productIndexToUpdate !== -1) {
         productList[productIndexToUpdate] = {...resourceData, id, timestamp };
@@ -67,10 +66,10 @@ export default class Fs implements DaoInterface {
       const productListFileContent = await fs.readFile('src/data/products.txt', 'utf-8');
       const productList = JSON.parse(productListFileContent);
 
-      const productToAdd = productList.find((product: Product) => product.id === productId);
+      const productToAdd = productList.find((product: Product) => Number(product.id) === Number(productId));
       if (!productToAdd) throw Error;
 
-      const cart = cartList.find((cart: Cart) => cart.id === cartId);
+      const cart = cartList.find((cart: Cart) => Number(cart.id) === Number(cartId));
       if (!cart) throw Error;
 
       cart.products.push(productToAdd); 
@@ -84,12 +83,12 @@ export default class Fs implements DaoInterface {
     };
   }
 
-  async delete(id: number): Promise<Resource | null> {
+  async delete(id: number | string): Promise<Resource | null> {
     try {
       const list = await this.read();
 
       if (this.resource === ResourceNames.CART) {
-        const cart = list.find((cart: Cart) => cart.id === id);
+        const cart = list.find((cart: Cart) => Number(cart.id) === Number(id));
         if (!cart) throw Error;
   
         cart.products = [];
@@ -99,7 +98,7 @@ export default class Fs implements DaoInterface {
         return cart; // muestra el cart actualizado, es decir, con los productos borrados. 
       }
 
-      const productIndexToDelete = list.findIndex((productToFind: Product) => productToFind.id === id);
+      const productIndexToDelete = list.findIndex((productToFind: Product) => Number(productToFind.id) === Number(id));
       if (productIndexToDelete !== -1) {
         const productToDelete = list[productIndexToDelete];
         list.splice(productIndexToDelete, 1);
