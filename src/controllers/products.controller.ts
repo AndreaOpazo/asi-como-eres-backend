@@ -7,7 +7,9 @@ export class ProductsController {
 
   public getList = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const productList = await this.productsService.getProducts();
+      const queryParams = req.query;
+      const productList = await this.productsService.getProducts(queryParams);
+      if (productList.length === 0 && Object.keys(queryParams).length !== 0) throw new Error(PRODUCT_NOT_FOUND);
       res.status(200).json(productList);
     } catch (error) {
       next(error);
