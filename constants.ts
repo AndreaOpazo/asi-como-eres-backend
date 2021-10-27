@@ -9,7 +9,7 @@ export const MONGODB: number = 3;
 export const MONGODBAAS: number = 4;
 export const FIREBASE: number = 5;
 
-export const USED_PERSISTENCY_TYPE: number = FIREBASE;
+export const USED_PERSISTENCY_TYPE: number = FS;
 
 export enum ResourceNames {
   PRODUCTS = 'products',
