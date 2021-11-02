@@ -2,14 +2,15 @@ export const CART_NOT_FOUND = 'Cart not found.';
 export const PRODUCT_NOT_FOUND = 'Product not found.'
 export const PRODUCT_IS_NOT_ADDED = 'The product could not be added.'
 
-export const FS: number = 0;
-export const MYSQL_MARIADB: number = 1;
-export const SQLITE3: number = 2;
-export const MONGODB: number = 3;
-export const MONGODBAAS: number = 4;
-export const FIREBASE: number = 5;
+export const MEMORY: number = 0;
+export const FS: number = 1;
+export const MYSQL_MARIADB: number = 2;
+export const SQLITE3: number = 3;
+export const MONGODB: number = 4;
+export const MONGODBAAS: number = 5;
+export const FIREBASE: number = 6;
 
-export const USED_PERSISTENCY_TYPE: number = FS;
+export const USED_PERSISTENCY_TYPE: number = MEMORY;
 
 export enum ResourceNames {
   PRODUCTS = 'products',
