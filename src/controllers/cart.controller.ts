@@ -1,6 +1,7 @@
 import { NextFunction, Response, Request } from 'express';
-import { CART_NOT_FOUND, PRODUCT_IS_NOT_ADDED } from '../../constants';
+import { PRODUCT_IS_NOT_ADDED, PRODUCT_NOT_FOUND } from '../../constants';
 import { CartService } from '../services/cart.service';
+import { Cart } from '../types';
 
 export class CartController {
   private cartService = new CartService();
@@ -8,20 +9,22 @@ export class CartController {
   public getCartList = async (_req: Request, res: Response, next: NextFunction) => {
     try {
       const cartList = await this.cartService.getCarts();
+      cartList.forEach((cart: Cart) => {
+        if (this.IsJsonString(cart.products)) cart.products = JSON.parse(cart.products as string);
+      });
       res.status(200).json(cartList);
     } catch (error) {
       next(error);
     }
   }
 
-  public getProductsByCartId = async (req: Request, res: Response, next: NextFunction) => {
+  public getProductByCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const cart = await this.cartService.getCartById(req.params.id);
-      if (cart) {
-        const products = cart.products;
-        res.status(200).json(this.IsJsonString(products) ? JSON.parse(products) : products);
+      const productInCart = await this.cartService.getProductByCart(req.params.id);
+      if (productInCart) {
+        res.status(200).json(this.IsJsonString(productInCart) ? JSON.parse(productInCart) : productInCart);
       } else {
-        res.status(404).json({ error: CART_NOT_FOUND })
+        res.status(404).json({ error: PRODUCT_NOT_FOUND })
       }
     } catch (error) {
       next(error);
@@ -30,8 +33,8 @@ export class CartController {
 
   public addProductToCart = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { cartId, productId } = req.params
-      const productSaved = await this.cartService.addProductToCart(cartId, productId);
+      const { productId } = req.params
+      const productSaved = await this.cartService.addProductToCart(productId);
       if (productSaved) {
         res.status(200).json(productSaved);
       } else {
@@ -48,7 +51,7 @@ export class CartController {
       if (cartProductsDeleted) {
         res.status(200).json(cartProductsDeleted);
       } else {
-        res.status(404).json({ error: CART_NOT_FOUND })
+        res.status(404).json({ error: PRODUCT_NOT_FOUND })
       }
     } catch (error) {
       next(error);

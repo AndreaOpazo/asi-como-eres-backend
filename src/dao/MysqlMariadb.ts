@@ -17,7 +17,15 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
     await super.checkTables(knex);
     const tableName = this.resource;
     try {
-      if (id) return await knex.from(tableName).where("id", id).first();
+      if (tableName === ResourceNames.PRODUCTS) {
+        if (id) return await knex.from(tableName).where("id", id).first();
+      } else {
+        if (id) {
+          const cart = await knex.from(tableName).where("id", 1).first();
+          const productsInCartParse = JSON.parse(cart.products);
+          return productsInCartParse.find((product: Product) => Number(product.id) === Number(id));
+        }
+      }
       return await knex.from(tableName).select("*");
     } catch (error) {
       console.error(error);
@@ -47,19 +55,19 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
     };
   }
 
-  async addProductToCart(cartId: number | string, productId: number): Promise<Product | null> {
+  async addProductToCart(productId: number): Promise<Product | null> {
     await super.checkTables(knex);
     try {
       const tableCart = this.resource;
       const tableProducts = ResourceNames.PRODUCTS;
       const productToAdd = await knex.from(tableProducts).where("id", productId).first();
-      if (!productToAdd) throw new Error(PRODUCT_NOT_FOUND); 
-      let cart = await this.read(cartId);
+      if (!productToAdd) throw Error;
+      let cart = await this.read();
       if (!cart) cart = await this.create({ products: '[]'} as Resource);
-      const jsonProducts = JSON.parse(cart.products);
+      const jsonProducts = JSON.parse(cart[0].products);
       jsonProducts.push(productToAdd);
-      await knex(tableCart).where("id", cartId).update({products: JSON.stringify(jsonProducts)});
-      return productToAdd;
+      await knex(tableCart).where("id", 1).update({products: JSON.stringify(jsonProducts)});
+      return productToAdd; // muestra el product agregado
     } catch (error) {
       console.log(error);
       return null;
@@ -74,11 +82,16 @@ export default class MysqlMariadb extends RelationalDB implements DaoInterface {
         const productToDelete = await knex.from(tableName).where("id", id).first();
         await knex.from(tableName).where("id", id).del();
         if (productToDelete.length === 0) throw new Error();
-        return productToDelete;
+        return productToDelete; // muestra el product que se borro
+      } else {
+        const cart = await knex.from(tableName).where("id", 1).first();
+        const productsInCartParse = JSON.parse(cart.products);
+        const existsProductInCart = productsInCartParse.find((product: Product) => Number(product.id) === Number(id));
+        if (!existsProductInCart) throw new Error(PRODUCT_NOT_FOUND);
+        cart.products = productsInCartParse.filter((product: Product) => Number(product.id) !== Number(id));
+        await knex(tableName).where("id", 1).update({products: JSON.stringify(cart.products)});
+        return cart; // muestra el cart actual
       }
-      await knex(tableName).where("id", id).update({products: JSON.stringify([])});
-      const cart = await knex.from(tableName).where("id", id).first();
-      return cart;
     } catch (error) {
       console.log(error);
       return null;

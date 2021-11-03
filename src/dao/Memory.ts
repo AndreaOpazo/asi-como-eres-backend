@@ -82,7 +82,7 @@ export default class Memory implements DaoInterface {
     };
   }
 
-  async addProductToCart(cartId: string | number, productId: string | number): Promise<Product> {
+  async addProductToCart(productId: string | number): Promise<Product> {
     try {
       const cartList = this.read() as Cart[];
       const productToAdd = products.find(product => Number(product.id) === Number(productId));

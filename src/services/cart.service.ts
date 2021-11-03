@@ -9,12 +9,12 @@ export class CartService  {
     return await this.persistanceType.read();
   };
 
-  public getCartById = async (id: number | string) => {
+  public getProductByCart = async (id: number | string) => {
     return await this.persistanceType.read(id);
   };
 
-  public addProductToCart = async (cartId: number | string, productId: number | string) => {
-    return await this.persistanceType.addProductToCart(cartId, productId);
+  public addProductToCart = async (productId: number | string) => {
+    return await this.persistanceType.addProductToCart(productId);
   };
 
   public deleteCartProducts = async (id: number | string) => {

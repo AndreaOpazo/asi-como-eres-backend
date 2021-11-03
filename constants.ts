@@ -1,4 +1,3 @@
-export const CART_NOT_FOUND = 'Cart not found.';
 export const PRODUCT_NOT_FOUND = 'Product not found.'
 export const PRODUCT_IS_NOT_ADDED = 'The product could not be added.'
 

@@ -1,7 +1,7 @@
 import DaoInterface from '../interfaces/dao.interface';
 import { Product, Resource } from '../types';
 import firestore from '../firebaseConnection';
-import { ResourceNames, PRODUCT_NOT_FOUND, CART_NOT_FOUND } from '../../constants';
+import { ResourceNames, PRODUCT_NOT_FOUND } from '../../constants';
 import { getActualDate } from '../utils';
 
 export default class Firebase implements DaoInterface {
@@ -19,10 +19,19 @@ export default class Firebase implements DaoInterface {
 
   async read(id?: number | string) {
     try {
-      if (id) {
-        const productSnapshot = await firestore.collection(this.resource).doc(id as string).get();
-        if (!productSnapshot.data()) throw new Error;
-        return this.mapProduct(productSnapshot);
+      if (this.resource === ResourceNames.PRODUCTS) {
+        if (id) {
+          const productSnapshot = await firestore.collection(this.resource).doc(id as string).get();
+          if (!productSnapshot.data()) throw new Error;
+          return this.mapProduct(productSnapshot);
+        }
+      } else {
+        if (id) {
+          const cartSnapshot = await firestore.collection(this.resource).limit(1).get();
+          const cart = cartSnapshot.docs[0].data();
+          if (cart.products.length === 0) throw new Error;
+          return cart.products.find((product: Product) => product.id === id);
+        }
       }
       const snapshot = await firestore.collection(this.resource).get();
       return snapshot.docs.map(this.mapProduct);
@@ -31,23 +40,23 @@ export default class Firebase implements DaoInterface {
     }
   }
 
-  async addProductToCart(cartId: number | string, productId: number | string): Promise<Product> {
+  async addProductToCart(productId: number | string): Promise<Product> {
     const productSnapshotToAdd = await firestore.collection(ResourceNames.PRODUCTS).doc(productId as string).get();
-    const productData = productSnapshotToAdd.data() as Product;
+    const productData = this.mapProduct(productSnapshotToAdd); 
     
     if (!productData) throw new Error(PRODUCT_NOT_FOUND);
     
-    const cartSnapshot = await firestore.collection(ResourceNames.CART).doc(cartId as string).get();
-    let cartData = cartSnapshot.data();
+    const cartSnapshot = await firestore.collection(ResourceNames.CART).limit(1).get();
+    let cartData = cartSnapshot.docs[0].data();
     
-    //si le paso un idCart que no existe, me crea un cart
-    if (!cartData) cartData = await this.create({ products: [], timestamp: getActualDate() } as Resource);
+    //si cart no existe, me crea un cart
+    if (!cartData) cartData = await this.create({ products: [] } as Resource);
 
     cartData.products.push(productData);
 
     await this.update(cartData.id, cartData as Resource);
 
-    return productData;
+    return productData as Product;
   }
 
   async create(resourceData: Resource): Promise<Resource | null> {
@@ -67,12 +76,15 @@ export default class Firebase implements DaoInterface {
       if (!productToDelete) throw new Error(PRODUCT_NOT_FOUND);
       const resourceReference = firestore.collection(this.resource).doc(id as string);
       await resourceReference.delete();
-      return productToDelete as Resource;
+      return productToDelete as Resource; // muestra el product borrado
     } else {
-      const cart = await this.read(id);
-      if (!cart) throw new Error(CART_NOT_FOUND);
-      await firestore.collection(this.resource).doc(id as string).update({ products: []});
-      return cart as Resource;
+      const productCartToDelete = await this.read(id);
+      if (!productCartToDelete) throw new Error(PRODUCT_NOT_FOUND);
+      const cartSnapshot = await firestore.collection(this.resource).limit(1).get();
+      const cart = cartSnapshot.docs[0].data();
+      cart.products = cart.products.filter((product: Product) => product.id !== productCartToDelete.id);
+      await this.update(cart.id, cart as Resource);
+      return cart as Resource; // muestra el cart actualizado
     }
   }
 }

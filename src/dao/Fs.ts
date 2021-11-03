@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import DaoInterface from "../interfaces/dao.interface";
-import { Cart, Product, Resource } from "../types";
+import { Product, Resource } from "../types";
 import { ResourceNames } from "../../constants";
 
 export default class Fs implements DaoInterface {
@@ -15,7 +15,11 @@ export default class Fs implements DaoInterface {
       const listFileContent = await fs.readFile(`src/data/${this.resource}.txt`, 'utf-8');
       if (!listFileContent && !id) return [];
       const list = JSON.parse(listFileContent);
-      if (id) return list.find((resource: { id: number; }) => Number(resource.id) === Number(id));
+      if (this.resource === ResourceNames.PRODUCTS) {
+        if (id) return list.find((product: Product) => Number(product.id) === Number(id));
+      } else {
+        if (id) return list[0].products.find((product: Product) => Number(product.id) === Number(id));
+      };
       return list;
     } catch (error) {
       console.error(error);
@@ -59,7 +63,7 @@ export default class Fs implements DaoInterface {
     }
   }
 
-  async addProductToCart(cartId: number, productId: number): Promise<Product | null> {
+  async addProductToCart(productId: number): Promise<Product | null> {
     try {
       const cartList = await this.read();
 
@@ -69,10 +73,11 @@ export default class Fs implements DaoInterface {
       const productToAdd = productList.find((product: Product) => Number(product.id) === Number(productId));
       if (!productToAdd) throw Error;
 
-      const cart = cartList.find((cart: Cart) => Number(cart.id) === Number(cartId));
-      if (!cart) throw Error;
-
-      cart.products.push(productToAdd); 
+      if (cartList.length > 0) {
+        cartList[0].products.push(productToAdd);
+      } else {
+        cartList.push({id: 1, products: [productToAdd], timestamp: Date.now()});
+      }
 
       await fs.writeFile('src/data/cart.txt', JSON.stringify(cartList))
 
@@ -88,25 +93,25 @@ export default class Fs implements DaoInterface {
       const list = await this.read();
 
       if (this.resource === ResourceNames.CART) {
-        const cart = list.find((cart: Cart) => Number(cart.id) === Number(id));
-        if (!cart) throw Error;
-  
-        cart.products = [];
-  
+        const productToRemove = list[0].products.find((product: Product) => Number(product.id) === Number(id));
+        if (!productToRemove) throw Error;
+        
+        list[0].products = list[0].products.filter((product: Product) => Number(product.id) !== Number(id));
+
         await fs.writeFile('src/data/cart.txt', JSON.stringify(list));
   
-        return cart; // muestra el cart actualizado, es decir, con los productos borrados. 
-      }
-
-      const productIndexToDelete = list.findIndex((productToFind: Product) => Number(productToFind.id) === Number(id));
-      if (productIndexToDelete !== -1) {
-        const productToDelete = list[productIndexToDelete];
-        list.splice(productIndexToDelete, 1);
-        await fs.writeFile('src/data/products.txt', JSON.stringify(list));
-        return productToDelete; // muestra el producto borrado
+        return list; // muestra el cart actualizado, es decir, con el producto borrado. 
       } else {
-        throw Error;
-      };
+        const productIndexToDelete = list.findIndex((productToFind: Product) => Number(productToFind.id) === Number(id));
+        if (productIndexToDelete !== -1) {
+          const productToDelete = list[productIndexToDelete];
+          list.splice(productIndexToDelete, 1);
+          await fs.writeFile('src/data/products.txt', JSON.stringify(list));
+          return productToDelete; // muestra el producto borrado
+        } else {
+          throw Error;
+        };
+      }
     } catch (error) {
       console.log(error);
       return null;
